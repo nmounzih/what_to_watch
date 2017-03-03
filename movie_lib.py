@@ -11,17 +11,17 @@ class Movie:
         self.release_date= kwargs.get('release_date')
         self.url = kwargs.get('imdb_url')
 
-
     def __repr__(self):
         return "{} {} {} {}".format(self.id, self.title_and_year, self.release_date, self.url)
 
     def get_rating_average(self, rating_dict):
+        print(rating_dict)
         temp_rate_list = []
-        for rate in rating_dict.values():
-            for single_rating in rate:
-                if self.id == single_rating.movie_id:
+        for rate_list in rating_dict.values():
+            for single_rating in rate_list:
+                if self.id == single_rating:  # change to work with uesr organized rating_dict
                     temp_rate_list.append(int(single_rating.number))
-        return round(sum(temp_rate_list) / len(temp_rate_list), 1) # maybe do more formatting later
+        return round(sum(temp_rate_list) / len(temp_rate_list), 3) # maybe do more formatting later
 
     def get_all_movie_rating(self, rating_dict):
         temp_rate_list = []
@@ -69,40 +69,50 @@ class Rating:
     def __repr__(self):
         return "{} {} {} {}".format(self.user, self.number, self.movie_id, self.timestamp)
 
+# 1 will return the movie_dict, 2 the user_dict, 3 the ratings_dict_movie_id and 4 the ratings_dict_user
+def load_data(return_value_int):
+    if return_value_int == 1:
+        """make list of movie instances to be analyzed"""
+        movies_list = []
+        genre_list = []
+        movie_dict = {}
+        with open("u.item", encoding="latin_1") as f:
+            reader = csv.DictReader(f, delimiter='|', fieldnames=["movie_id", "movie_title_and_year", "release_date", "imdb_url"])
+            for row in reader:
+                genre_list.append(row[None])
+                del row[None]# this is a hack to deal with problem
+                movies_list.append(Movie(**row))
+            for movie in movies_list:
+                movie_dict.setdefault(movie.id, []).append(movie)
+        return movie_dict
 
-def main():
-    """make list of movie instances to be analyzed"""
-    movies_list = []
-    genre_list = []
-    with open("u.item", encoding="latin_1") as f:
-        reader = csv.DictReader(f, delimiter='|', fieldnames=["movie_id", "movie_title_and_year", "release_date", "imdb_url"])
-        for row in reader:
-            genre_list.append(row[None])
-            del row[None]# this is a hack to deal with problem
-            movies_list.append(Movie(**row))
-        movies_dict = {movies.id: movies for movies in movies_list}
+    elif return_value_int == 2:
+        """make list of users to be analyzed"""
+        user_list = []
+        users_dict = {}
+        with open("u.user", encoding="latin_1") as f:
+            reader = csv.DictReader(f, delimiter='|', fieldnames=["user_id", "user_age", "gender", "job", "zip_code"])
+            for row in reader:
+                user_list.append(User(**row))
+            for user in user_list:
+                users_dict.setdefault(user.id, []).append(user)
+        return users_dict
 
-    """make list of users to be analyzed"""
-    user_list = []
-    with open("u.user", encoding="latin_1") as f:
-        reader = csv.DictReader(f, delimiter='|', fieldnames=["user_id", "user_age", "gender", "job", "zip_code"])
-        for row in reader:
-            user_list.append(User(**row))
-        user_dict = {users.id: users for users in user_list}
-
-    """make list of ratings to be analyzed"""
-    rating_list = []
-    with open("u.data", encoding='latin_1') as f:
-        reader = csv.DictReader(f, delimiter='\t', fieldnames=['user', 'movie_id', 'score', 'timestamp'])
-        for row in reader:
-            rating_list.append(Rating(**row))
+    elif return_value_int == 3 or return_value_int == 4:
+        """make list of ratings to be analyzed"""
+        rating_list = []
+        with open("u.data", encoding='latin_1') as f:
+            reader = csv.DictReader(f, delimiter='\t', fieldnames=['user', 'movie_id', 'score', 'timestamp'])
+            for row in reader:
+                rating_list.append(Rating(**row))
         rating_dict_movie_id = {}
         rating_dict_user = {}
-        for data in rating_list:
-            rating_dict_movie_list.setdefault(data.movie_id, []).append(data)
-            rating_dict_user.setdefault(data.user, []).append(data)
-
-
-
-if __name__ == "__main__":
-    main()
+        for rating in rating_list:
+            rating_dict_movie_id.setdefault(rating.movie_id, []).append(rating)
+            rating_dict_user.setdefault(rating.user, []).append(rating)
+        if return_value_int == 3:
+            return rating_dict_movie_id
+        elif return_value_int == 4:
+            return rating_dict_user
+    else:
+        return "You didn't enter a correct return value for the desired collection"
