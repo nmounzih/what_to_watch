@@ -15,22 +15,27 @@ class Movie:
     def __repr__(self):
         return "{} {} {} {}".format(self.id, self.title_and_year, self.release_date, self.url)
 
-    def get_rating_average(self, rating_list):
+    def get_rating_average(self, rating_dict):
         temp_rate_list = []
-        for rate in rating_list:
-            if self.id == rate.movie_title:
-                temp_rate_list.append(int(rate.number))
+        for rate in rating_dict.values():
+            for single_rating in rate:
+                if self.id == single_rating.movie_id:
+                    temp_rate_list.append(int(single_rating.number))
         return round(sum(temp_rate_list) / len(temp_rate_list), 1) # maybe do more formatting later
 
-    def get_all_movie_rating(self, rating_list):
+    def get_all_movie_rating(self, rating_dict):
         temp_rate_list = []
-        for rate in rating_list:
-            if self.id == rate.movie_title:
-                temp_rate_list.append(int(rate.number))
+        for rate in rating_dict.values():
+            for single_rating in rate:
+                if self.id == single_rating.movie_id:
+                    temp_rate_list.append(int(single_rating.number))
         return temp_rate_list
 
     def get_movie_name(self, id_num, movies_dict):
-        return movies_dict[id_num].movie_title_and_year # fix this
+        try:
+            return movies_dict[id_num].title_and_year
+        except KeyError:
+            return "Sorry your selection is not in our data set"
 
 
 
@@ -48,8 +53,11 @@ class User:
     def __repr__(self):
         return "{} {} {} {} {}".format(self.id, self.age, self.gender, self.job, self.zip_code)
 
-
-        # do other stuff later maybe!!
+    def get_all_ratings_for_user(self, rating_dict_user):
+        try:
+            return [v.number for key, value in rating_dict_user.items() for v in value if self.id == key]
+        except KeyError:
+            return "Sorry your selection is not in our data set"
 
 class Rating:
     def __init__(self, **kwargs):
@@ -60,9 +68,6 @@ class Rating:
 
     def __repr__(self):
         return "{} {} {} {}".format(self.user, self.number, self.movie_id, self.timestamp)
-
-    def get_all_ratings_for_user(self, rating_dict_user): # make sure you pass the rating_dict_user not the movie indexed dict!!!
-        return [rating_dict_user[self.id].number for self.id in rating_dict_user]
 
 
 def main():
@@ -91,11 +96,13 @@ def main():
         reader = csv.DictReader(f, delimiter='\t', fieldnames=['user', 'movie_id', 'score', 'timestamp'])
         for row in reader:
             rating_list.append(Rating(**row))
-        rating_dict_movie_id = {rating.movie_id: rating for rating in rating_list}
-        rating_dict_user = {rating.user: rating for rating in rating_list}
+        rating_dict_movie_id = {}
+        rating_dict_user = {}
+        for data in rating_list:
+            rating_dict_movie_list.setdefault(data.movie_id, []).append(data)
+            rating_dict_user.setdefault(data.user, []).append(data)
 
-    for key, value in rating_dict_user.items():
-        print(key, value)
+
 
 if __name__ == "__main__":
     main()
