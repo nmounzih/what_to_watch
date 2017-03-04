@@ -15,12 +15,11 @@ class Movie:
         return "{} {} {} {}".format(self.id, self.title_and_year, self.release_date, self.url)
 
     def get_rating_average(self, rating_dict):
-        print(rating_dict)
         temp_rate_list = []
         for rate_list in rating_dict.values():
             for single_rating in rate_list:
-                if self.id == single_rating:  # change to work with uesr organized rating_dict
-                    temp_rate_list.append(int(single_rating.number))
+                #if self.id == single_rating.movie_id:  # change to work with uesr organized rating_dict
+                temp_rate_list.append(single_rating)
         return round(sum(temp_rate_list) / len(temp_rate_list), 3) # maybe do more formatting later
 
     def get_all_movie_rating(self, rating_dict):
@@ -76,7 +75,7 @@ def load_data(return_value_int):
         movies_list = []
         genre_list = []
         movie_dict = {}
-        with open("u.item", encoding="latin_1") as f:
+        with open("test_movie_data.csv", encoding="latin_1") as f:
             reader = csv.DictReader(f, delimiter='|', fieldnames=["movie_id", "movie_title_and_year", "release_date", "imdb_url"])
             for row in reader:
                 genre_list.append(row[None])
@@ -90,7 +89,7 @@ def load_data(return_value_int):
         """make list of users to be analyzed"""
         user_list = []
         users_dict = {}
-        with open("u.user", encoding="latin_1") as f:
+        with open("test_user_data.csv", encoding="latin_1") as f:
             reader = csv.DictReader(f, delimiter='|', fieldnames=["user_id", "user_age", "gender", "job", "zip_code"])
             for row in reader:
                 user_list.append(User(**row))
@@ -101,7 +100,7 @@ def load_data(return_value_int):
     elif return_value_int == 3 or return_value_int == 4:
         """make list of ratings to be analyzed"""
         rating_list = []
-        with open("u.data", encoding='latin_1') as f:
+        with open("test_rating_data.csv", encoding='latin_1') as f:
             reader = csv.DictReader(f, delimiter='\t', fieldnames=['user', 'movie_id', 'score', 'timestamp'])
             for row in reader:
                 rating_list.append(Rating(**row))
@@ -109,10 +108,12 @@ def load_data(return_value_int):
         rating_dict_user = {}
         for rating in rating_list:
             rating_dict_movie_id.setdefault(rating.movie_id, []).append(rating)
-            rating_dict_user.setdefault(rating.user, []).append(rating)
+            rating_dict_user.setdefault(rating.user, []).append((rating.movie_id, rating.number))
         if return_value_int == 3:
             return rating_dict_movie_id
         elif return_value_int == 4:
             return rating_dict_user
     else:
         return "You didn't enter a correct return value for the desired collection"
+
+load_data(4)
