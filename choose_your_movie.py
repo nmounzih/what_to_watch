@@ -1,6 +1,14 @@
 from movie_lib import *
 import os
 
+def clear():
+    os.system("clear")
+
+def main_menu_go():
+    back_to_main = input("\nHit enter to return to the main menu. ").lower
+    clear()
+    main()
+
 def main():
     # movies, users, ratings by movie, rating by user
     all_data = (load_data(0), load_data(1), load_data(2)
@@ -115,3 +123,4 @@ def main():
     elif user_input == 'q'.lower():
         clear()
         exit()
+main()
