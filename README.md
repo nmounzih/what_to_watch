@@ -24,7 +24,7 @@ Pair programmed a movie recommendation app that operates like Netflix. We took 1
 
  Python3
 
- ## Running the tests
+ ## Running the tests      
 
  Tests are run on "nosetest movie_lib_test.py"
 
